@@ -147,6 +147,14 @@ const router = createRouter({
             }
         },
         {
+            path: 'manager/plugins/transactions',
+            component: () => import('../views/user/manager/settings/pluginTransactions.vue'),
+            meta: {
+                'title': 'تراکنش‌های افزونه‌ها',
+                'login': true
+            }
+        },
+        {
             path: 'manager/update-core',
             component: () => import('../views/user/manager/settings/update-core.vue'),
             meta: {
@@ -297,6 +305,12 @@ const router = createRouter({
             name: 'person_buysell_by_person',
             component: () =>
                 import('../views/acc/reports/persons/buysellByPerson.vue'),
+        },
+        {
+            path: 'reports/persons/withdet',
+            name: 'person_withdet',
+            component: () =>
+                import('../views/acc/reports/persons/withdet.vue'),
         },
         {
             path: 'costs/list',

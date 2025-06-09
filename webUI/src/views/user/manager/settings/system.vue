@@ -18,6 +18,16 @@ export default defineComponent({
           value: 'pec',
           props: { subtitle: 'pec.ir' },
         },
+        {
+          title: 'پی‌پینگ',
+          value: 'payping',
+          props: { subtitle: 'payping.ir' },
+        },
+        {
+          title: 'بیت‌پی',
+          value: 'bitpay',
+          props: { subtitle: 'bitpay.ir' },
+        },
       ],
       systemInfo: {
         keywords: '',
@@ -26,6 +36,8 @@ export default defineComponent({
         appSite: '',
         activeGateway:'zarinpal',
         parsianGatewayAPI: '',
+        paypingKey: '',
+        bitpayKey: '',
       },
       loading: true,
     }
@@ -85,6 +97,14 @@ export default defineComponent({
           <v-col cols="12" sm="12" md="4">
             <v-text-field class="" hide-details="auto" :label="$t('pages.manager.parsian_api')"
               v-model="systemInfo.parsianGatewayAPI" type="text" prepend-inner-icon="mdi-text"></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="12" md="4">
+            <v-text-field class="" hide-details="auto" :label="$t('pages.manager.payping_api')"
+              v-model="systemInfo.paypingKey" type="text" prepend-inner-icon="mdi-text"></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="12" md="4">
+            <v-text-field class="" hide-details="auto" :label="$t('pages.manager.bitpay_api')"
+              v-model="systemInfo.bitpayKey" type="text" prepend-inner-icon="mdi-text"></v-text-field>
           </v-col>
           <v-col cols="12" sm="12" md="12">
             <v-btn type="submit" @click="submit()" color="primary" prepend-icon="mdi-content-save" :loading="loading">

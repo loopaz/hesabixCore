@@ -100,6 +100,7 @@ const fa_lang = {
     ultimate_package: 'بسته‌های نامحدود',
     sell_chart: "فروش هفته گذشته",
     bankaccounts_transactions: "کارت حساب بانک",
+    cashdesk_transactions: "کارت حساب صندوق",
     print_queue: "صف چاپ",
     open_balance: "تراز افتتاحیه",
     sell_invoices_long: "فاکتور‌های فروش",
@@ -286,6 +287,7 @@ const fa_lang = {
     fetch_data_error: "خطا در گرفتن داده از {url}"
   },
   dialog: {
+    person_with_det_report: 'گزارش تفضیلی اشخاص',
     change_password_label: 'تغییر کلمه عبور',
     download: 'دانلود',
     delete_group: 'حذف گروهی',
@@ -545,6 +547,14 @@ const fa_lang = {
       return_sell: "برگشت از فروش",
       all_types: "همه موارد"
     },
+    field: {
+      id: "شناسه",
+      date: "تاریخ",
+      employee: "کارمند",
+      amount: "مبلغ",
+      status: "وضعیت",
+      actions: "عملیات"
+    },
   },
   app: {
     loading: "در حال بارگذاری...",
@@ -793,6 +803,8 @@ const fa_lang = {
       keywords: "کلیدواژه‌ها با کاما (,) از هم جدا شوند",
       zarinpal_api: "کد API زرین‌پال",
       parsian_api: "کد API درگاه پارسیان",
+      payping_api: "کد API درگاه پی‌پینگ",
+      bitpay_api: "کد API درگاه بیت‌پی",
       scripts: "اسکریپت‌ها",
       footer_scripts: "اسکریپت‌های فوتر سایت(مثلا اسکریپت شمارنده گوگل و ...)",
       site_footer: "فوتر سایت با پشتیبانی از HTML",

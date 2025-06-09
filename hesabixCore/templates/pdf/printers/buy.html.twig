@@ -255,7 +255,7 @@
 										</h4>
 										<ul class="">
 											<li class="">
-												{{note}}
+												{{note | raw}}
 											</li>
 										</ul>
 										{% endif %}
@@ -276,7 +276,7 @@
 									{{transfer | number_format}}
 								</h4>
 								<h4>
-									مبلغ کل بدون تخفیف:
+									جمع بدون تخفیف:
 									{{ (doc.amount + discount) | number_format}}
 								</h4>
 								<h4>

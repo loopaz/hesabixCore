@@ -79,6 +79,58 @@ class PayMGR
                     }
                 }
             }
+        } elseif ($activeGateway == 'payping') {
+            $data = array(
+                'amount' => $price,
+                'returnUrl' => $callback_url,
+                'description' => $des,
+                'clientRefId' => $orderID
+            );
+
+            $ch = curl_init('https://api.payping.ir/v2/pay');
+            curl_setopt_array($ch, array(
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 45,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($data),
+                CURLOPT_HTTPHEADER => array(
+                    "accept: application/json",
+                    "authorization: Bearer " . $this->registry->get('system', 'paypingKey'),
+                    "cache-control: no-cache",
+                    "content-type: application/json",
+                ),
+            ));
+
+            $response = curl_exec($ch);
+            $err = curl_error($ch);
+            $header = curl_getinfo($ch);
+            curl_close($ch);
+
+            if ($err) {
+                $res['message'] = 'خطا در ارتباط با پی‌پینگ: ' . $err;
+                return $res;
+            }
+
+            if ($header['http_code'] == 200) {
+                $response = json_decode($response, true);
+                if (isset($response['code'])) {
+                    $res['code'] = 100;
+                    $res['Success'] = true;
+                    $res['gate'] = 'payping';
+                    $res['message'] = 'OK';
+                    $res['authkey'] = $response['code'];
+                    $res['targetURL'] = 'https://api.payping.ir/v2/pay/gotoipg/' . $response['code'];
+                } else {
+                    $res['message'] = 'خطا در دریافت کد پرداخت از پی‌پینگ';
+                }
+            } elseif ($header['http_code'] == 400) {
+                $res['message'] = 'خطا در درخواست پرداخت: ' . $response;
+            } else {
+                $res['message'] = 'خطا در ارتباط با پی‌پینگ. کد خطا: ' . $header['http_code'];
+            }
         } elseif ($activeGateway == 'pec') {
             ini_set("soap.wsdl_cache_enabled", "0");
             $url = "https://pec.shaparak.ir/NewIPGServices/Sale/SaleService.asmx?WSDL";
@@ -107,6 +159,31 @@ class PayMGR
             } catch (\Exception $ex) {
 
             }
+        } elseif ($activeGateway == 'bitpay') {
+            $url = 'https://bitpay.ir/payment/gateway-send';
+            $api = $this->registry->get('system', 'bitpayKey');
+            $amount = $price;
+            $redirect = $callback_url;
+            $factorId = $orderID;
+            $name = '';
+            $email = '';
+            $description = $des;
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, "api=$api&amount=$amount&redirect=$redirect&factorId=$factorId&name=$name&email=$email&description=$description");
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $result = curl_exec($ch);
+            curl_close($ch);
+            if ($result > 0 && is_numeric($result)) {
+                $res['code'] = 100;
+                $res['Success'] = true;
+                $res['gate'] = 'bitpay';
+                $res['message'] = 'OK';
+                $res['authkey'] = $result;
+                $res['targetURL'] = "https://bitpay.ir/payment/gateway-$result-get";
+            }
+        
         }
         return $res;
     }
@@ -150,6 +227,53 @@ class PayMGR
                     }
                 }
             }
+        } elseif ($activeGateway == 'payping') {
+            $refid = $request->get('refid');
+            if (!$refid) {
+                return $res;
+            }
+
+            $data = array(
+                'amount' => $price,
+                'refId' => $refid
+            );
+
+            $ch = curl_init('https://api.payping.ir/v2/pay/verify');
+            curl_setopt_array($ch, array(
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => "",
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 45,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POSTFIELDS => json_encode($data),
+                CURLOPT_HTTPHEADER => array(
+                    "accept: application/json",
+                    "authorization: Bearer " . $this->registry->get('system', 'paypingKey'),
+                    "cache-control: no-cache",
+                    "content-type: application/json",
+                ),
+            ));
+
+            $response = curl_exec($ch);
+            $err = curl_error($ch);
+            $header = curl_getinfo($ch);
+            curl_close($ch);
+
+            if ($err) {
+                return $res;
+            }
+
+            if ($header['http_code'] == 200) {
+                $response = json_decode($response, true);
+                if (isset($refid) && $refid != '') {
+                    $res['Success'] = true;
+                    $res['status'] = 100;
+                    $res['refID'] = $refid;
+                    $res['card_pan'] = ''; // PayPing این اطلاعات را برنمی‌گرداند
+                    return $res;
+                }
+            }
         } elseif ($activeGateway == 'pec') {
             $confirmUrl = 'https://pec.shaparak.ir/NewIPGServices/Confirm/ConfirmService.asmx?WSDL';
             $params = array(
@@ -167,6 +291,27 @@ class PayMGR
                 $res['status'] = 100;
                 $res['refID'] = $result->ConfirmPaymentResult->RRN;
                 $res['card_pan'] = $result->ConfirmPaymentResult->CardNumberMasked;
+            }
+        } elseif ($activeGateway == 'bitpay') {
+            $url = 'https://bitpay.ir/payment/gateway-result-second';
+            $api = $this->registry->get('system', 'bitpayKey');
+            $trans_id = $request->get('trans_id');
+            $id_get = $request->get('id_get');
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, "api=$api&id_get=$id_get&trans_id=$trans_id&json=1");
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $result = curl_exec($ch);
+            curl_close($ch);
+
+            $parseDecode = json_decode($result);
+            if ($parseDecode->status == 1) {
+                $res['Success'] = true;
+                $res['status'] = 100;
+                $res['refID'] = $trans_id;
+                $res['card_pan'] = $parseDecode->cardNum;
             }
         }
         return $res;
